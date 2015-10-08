@@ -7,11 +7,16 @@
 //
 
 import UIKit
-
+import Location
 class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        Location.address { (location, error) in
+            print("Found location \(location) - \(error)")
+        }
+        
         // Do any additional setup after loading the view, typically from a nib.
     }
 

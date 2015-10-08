@@ -1,0 +1,14 @@
+PODS:
+  - Location (0.1.0)
+
+DEPENDENCIES:
+  - Location (from `../`)
+
+EXTERNAL SOURCES:
+  Location:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Location: 13431d37b5a5fd878da5cc1e5a7b92932044c219
+
+COCOAPODS: 0.38.2
