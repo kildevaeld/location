@@ -18,6 +18,8 @@
 		3A265BA11BC72C710045BFB9 /* Address.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A265B9D1BC729E50045BFB9 /* Address.swift */; settings = {ASSET_TAGS = (); }; };
 		3A265BA31BC7303A0045BFB9 /* Location+Address.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A265BA21BC7303A0045BFB9 /* Location+Address.swift */; settings = {ASSET_TAGS = (); }; };
 		3A265BA41BC732920045BFB9 /* Location+Address.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A265BA21BC7303A0045BFB9 /* Location+Address.swift */; settings = {ASSET_TAGS = (); }; };
+		3A43B1291BCAA054006866DC /* address-cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A43B1281BCAA054006866DC /* address-cache.swift */; settings = {ASSET_TAGS = (); }; };
+		3A43B12A1BCAA0C9006866DC /* address-cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A43B1281BCAA054006866DC /* address-cache.swift */; settings = {ASSET_TAGS = (); }; };
 		3DF71EF45E160D81A9B65E6F195ED1A3 /* Location.bundle in Resources */ = {isa = PBXBuildFile; fileRef = DDCFFAE87E674F18EDD8F59D938F8020 /* Location.bundle */; };
 		70A31D1F9B4E55293824B7D4DEBC1531 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7BAB14DC0A7ACBF43622E924134C495E /* Foundation.framework */; };
 		72D547CD9CC7C234A91B97B8E859FF41 /* Pods-Location_Example-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AE0BD49A453B2ED1162B1DBB1AAFA71 /* Pods-Location_Example-dummy.m */; };
@@ -66,6 +68,7 @@
 		3A265B9D1BC729E50045BFB9 /* Address.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Address.swift; sourceTree = "<group>"; };
 		3A265B9F1BC72AB40045BFB9 /* NSPredicate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSPredicate.swift; sourceTree = "<group>"; };
 		3A265BA21BC7303A0045BFB9 /* Location+Address.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Location+Address.swift"; sourceTree = "<group>"; };
+		3A43B1281BCAA054006866DC /* address-cache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "address-cache.swift"; sourceTree = "<group>"; };
 		45749F0B3D3304DAAC400D9CB872299E /* Pods-Location_Example-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-Location_Example-acknowledgements.plist"; sourceTree = "<group>"; };
 		4C69D3A1462C827D14A0DF9454C6B23F /* Pods-Location_Example-resources.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-Location_Example-resources.sh"; sourceTree = "<group>"; };
 		6B3A0CAD491B80A4D7824A77E7B2E03F /* Pods-Location_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-Location_Example.release.xcconfig"; sourceTree = "<group>"; };
@@ -166,6 +169,7 @@
 				3A265B9D1BC729E50045BFB9 /* Address.swift */,
 				3A265B9F1BC72AB40045BFB9 /* NSPredicate.swift */,
 				3A265BA21BC7303A0045BFB9 /* Location+Address.swift */,
+				3A43B1281BCAA054006866DC /* address-cache.swift */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -427,6 +431,7 @@
 				3A265BA01BC72AB40045BFB9 /* NSPredicate.swift in Sources */,
 				3A265BA31BC7303A0045BFB9 /* Location+Address.swift in Sources */,
 				B8AB9932EEAE7FC9E3D426F879E07017 /* Location.swift in Sources */,
+				3A43B1291BCAA054006866DC /* address-cache.swift in Sources */,
 				3A265B991BC7226D0045BFB9 /* LocationParser.swift in Sources */,
 				97868448B672301FE07EBC0A2506AD48 /* Request.swift in Sources */,
 			);
@@ -441,6 +446,7 @@
 				3A265B9B1BC7236B0045BFB9 /* Location.swift in Sources */,
 				3A265B9A1BC723360045BFB9 /* LocationParser.swift in Sources */,
 				3A265BA11BC72C710045BFB9 /* Address.swift in Sources */,
+				3A43B12A1BCAA0C9006866DC /* address-cache.swift in Sources */,
 				3A265BA41BC732920045BFB9 /* Location+Address.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

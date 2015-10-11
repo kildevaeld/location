@@ -10,19 +10,20 @@ import Foundation
 import MapKit
 public typealias IsoCode = String
 public typealias AddressMeta = [String: AnyObject]
-public class Country : CustomStringConvertible, Equatable, Hashable {
-    let name: String
-    let iso: IsoCode
-    init(name:String, iso:IsoCode) {
+
+public class Country : NSObject {
+    public let name: String
+    public let iso: IsoCode
+    public init(name:String, iso:IsoCode) {
         self.name = name
         self.iso = iso
     }
     
-    public var description: String {
+    public override var description: String {
         return "\(self.name) (\(self.iso))"
     }
     
-    public var hashValue: Int {
+    public override var hashValue: Int {
         return self.iso.hashValue
     }
 }
@@ -32,23 +33,25 @@ public func ==(lhs:Country, rhs: Country) -> Bool {
 }
 
 
-public class City: CustomStringConvertible, Equatable, Hashable {
-    let name: String
-    let country: Country
-    init (name:String, country: Country) {
+public class City: NSObject {
+    public let name: String
+    public let country: Country
+    
+    public init (name:String, country: Country) {
         self.name = name
         self.country = country
     }
-    init (name:String, country:String, iso:String) {
+    
+    public init (name:String, country:String, iso:String) {
         self.name = name
         self.country = Country(name: country, iso: iso)
     }
     
-    public var description: String {
+    public override var description: String {
         return "\(name), \(self.country)"
     }
     
-    public var hashValue: Int {
+    public override var hashValue: Int {
         return self.name.hashValue ^ self.country.hashValue
     }
 }
@@ -120,7 +123,7 @@ public class Address : NSObject, MKAnnotation, NSCoding  {
         
         let country = Country(name: placemark.country!, iso:placemark.ISOcountryCode!)
         let city = City(name: placemark.locality!, country:country)
-        let street = placemark.subThoroughfare != nil ? placemark.thoroughfare! + " " + placemark.subThoroughfare! : placemark.thoroughfare
+        let street = placemark.subThoroughfare != "" ? placemark.thoroughfare! + " " + placemark.subThoroughfare! : placemark.thoroughfare
         self.init(city:city, street: street!, zipCode:placemark.postalCode!, location: placemark.location!)
         
     }
@@ -133,6 +136,14 @@ public class Address : NSObject, MKAnnotation, NSCoding  {
         aCoder.encodeObject(self.zipCode, forKey: AddressCoding.ZipCode)
         aCoder.encodeDouble(self.coordinate.latitude, forKey: AddressCoding.Latitude)
         aCoder.encodeDouble(self.coordinate.longitude, forKey: AddressCoding.Longitude)
+    }
+    
+    var placemark: CLPlacemark {
+        return self.addressDictionary.placemark(self.location)
+    }
+    
+    var addressDictionary: AddressDictionary {
+        return AddressDictionary(address: self)
     }
 }
 

@@ -13,7 +13,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        Location.address { (location, error) in
+        Location.address(service:.Google) { (location, error) in
             print("Found location \(location) - \(error)")
         }
         

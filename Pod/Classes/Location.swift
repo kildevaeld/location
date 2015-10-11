@@ -11,11 +11,23 @@ public enum Status :Int {
     case Disabled
 }
 
+public enum Service {
+    case Google
+    case Apple
+}
+
 public enum LocationError : ErrorType {
     case ServiceUnavailable
     case Timeout(NSTimeInterval)
     case LocationError(ErrorType)
     case Unknown(String)
+    
+    init?(_ error:ErrorType?) {
+        if error != nil {
+            return nil
+        }
+        self = .LocationError(error!)
+    }
 }
 
 extension LocationError : CustomStringConvertible {
@@ -128,14 +140,17 @@ public class Location : NSObject, CLLocationManagerDelegate {
     private let manager: CLLocationManager
     private var requests: [Request] = []
     private let queue = dispatch_queue_create("LocationRequest", DISPATCH_QUEUE_SERIAL)
-
+    
+    let cache: AddressCache
     static let shared = Location()
     
     override private init() {
         self.manager = CLLocationManager()
+        self.cache = AddressCache()
         super.init()
         
         self.manager.delegate = self
+        self.cache.load()
     }
     
     static var canLocate: Bool {
@@ -186,25 +201,32 @@ public class Location : NSObject, CLLocationManagerDelegate {
         return request.id
     }
     
-    public static func placemark (location:CLLocation? = nil, block: OnGeocodingHandler) {
+    public static func placemark (location:CLLocation? = nil, service:Service = .Apple, block: OnGeocodingHandler) {
         
         if location != nil {
-            return self.placemark(location!.coordinate, block: block)
+            return self.placemark(location!.coordinate, service: service, block: block)
         }
         
-        self.currentLocation(accuracy: .Block) { (location, error) in
+        self.currentLocation(accuracy: .Block) {  (location, error) in
             
             if error != nil || location == nil {
                 block(placemark: nil, error: error)
             }
             
-            self.placemark(location!.coordinate, block: block)
+            self.placemark(location!.coordinate, service:service, block: block)
         }
         
     }
     
-    public static func placemark (coordinates:CLLocationCoordinate2D, block: OnGeocodingHandler) {
-        let geocoder = CLGeocoder()
+    public static func placemark (coordinates:CLLocationCoordinate2D, service:Service = .Apple, block: OnGeocodingHandler) {
+        
+        switch service {
+        case .Apple:
+            self.shared.reverseAppleCoodirnates(coordinates, block: block)
+        case .Google:
+            self.shared.reverseGoogleCoordinates(coordinates, block: block)
+        }
+        /*let geocoder = CLGeocoder()
         let location = CLLocation(latitude: coordinates.latitude, longitude: coordinates.longitude)
         
         geocoder.reverseGeocodeLocation(location, completionHandler: { (placemarks, error) in
@@ -219,11 +241,19 @@ public class Location : NSObject, CLLocationManagerDelegate {
                     block(placemark: nil, error: nil)
                 }
             }
-        })
+        })*/
     }
     
-    public static func placemark (address:String, region:CLRegion? = nil, block: OnGeocodingHandler) {
-        let geocoder = CLGeocoder()
+    public static func placemark (address:String, service: Service = .Apple, region:CLRegion? = nil, block: OnGeocodingHandler) {
+        
+        switch service {
+        case .Apple:
+            self.shared.reverseAppleAddress(address, region: region, block: block)
+        case .Google:
+            self.shared.reverseGoogleAddress(address, block: block)
+        }
+        
+        /*let geocoder = CLGeocoder()
         geocoder.geocodeAddressString(address, inRegion: region) { (placemarks, error) -> Void in
             if error != nil {
                 block(placemark:nil, error: LocationError.LocationError(error!))
@@ -236,7 +266,7 @@ public class Location : NSObject, CLLocationManagerDelegate {
                     block(placemark: nil, error: nil)
                 }
             }
-        }
+        }*/
     }
 
     
@@ -273,6 +303,116 @@ public class Location : NSObject, CLLocationManagerDelegate {
         }
     }
     
+    // MARK: - [Private] Apple Reverse Geocoding
+    private func reverseAppleCoodirnates(coordinates: CLLocationCoordinate2D, block: OnGeocodingHandler) {
+        let geocoder = CLGeocoder()
+        let location = CLLocation(latitude: coordinates.latitude, longitude: coordinates.longitude)
+        
+        geocoder.reverseGeocodeLocation(location, completionHandler: { (placemarks, error) in
+            if error != nil {
+                block(placemark:nil, error: LocationError.LocationError(error!))
+            } else {
+                if let placemark = placemarks?[0] {
+                    let address = LocationParser()
+                    address.parseAppleLocationData(placemark)
+                    block(placemark: address.getPlacemark(), error:nil)
+                } else {
+                    block(placemark: nil, error: nil)
+                }
+            }
+        })
+    }
+    
+    private func reverseAppleAddress(address:String, region:CLRegion?, block: OnGeocodingHandler) {
+        let geocoder = CLGeocoder()
+        geocoder.geocodeAddressString(address, inRegion: region) { (placemarks, error) -> Void in
+            if error != nil {
+                block(placemark:nil, error: LocationError.LocationError(error!))
+            } else {
+                if let placemark = placemarks?[0] {
+                    let address = LocationParser()
+                    address.parseAppleLocationData(placemark)
+                    block(placemark: address.getPlacemark(), error:nil)
+                } else {
+                    block(placemark: nil, error: nil)
+                }
+            }
+        }
+    }
+    
+
+    //MARK: [Private] Google / Reverse Geocoding
+    
+    private func reverseGoogleCoordinates(coordinates: CLLocationCoordinate2D!, block:OnGeocodingHandler) {
+        var APIURLString = "https://maps.googleapis.com/maps/api/geocode/json?latlng=\(coordinates.latitude),\(coordinates.longitude)" as NSString
+        print(APIURLString)
+        APIURLString = APIURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!
+        let APIURL = NSURL(string: APIURLString as String)
+        let APIURLRequest = NSURLRequest(URL: APIURL!)
+        NSURLConnection.sendAsynchronousRequest(APIURLRequest, queue: NSOperationQueue.mainQueue()) { (response, data, error) in
+            if error != nil {
+                return block(placemark: nil, error: LocationError.LocationError(error!))
+            }
+            
+            if data != nil {
+                let jsonResult: NSDictionary = (try! NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.MutableContainers)) as! NSDictionary
+                let (error,noResults) = self.validateGoogleJSONResponse(jsonResult)
+                if noResults == true || error != nil { // request is ok but not results are returned
+                    block(placemark: nil, error: LocationError(error))
+                } else { // we have some good results to show
+                    let address = LocationParser()
+                    address.parseGoogleLocationData(jsonResult)
+                    let placemark:CLPlacemark = address.getPlacemark()
+                    block(placemark: placemark, error: nil)
+                }
+            }
+        }
+    }
+    
+    private func reverseGoogleAddress(address: String!, block:OnGeocodingHandler) {
+        var APIURLString = "https://maps.googleapis.com/maps/api/geocode/json?address=\(address)" as NSString
+        APIURLString = APIURLString.stringByAddingPercentEscapesUsingEncoding(NSUTF8StringEncoding)!
+        let APIURL = NSURL(string: APIURLString as String)
+        let APIURLRequest = NSURLRequest(URL: APIURL!)
+        NSURLConnection.sendAsynchronousRequest(APIURLRequest, queue: NSOperationQueue.mainQueue()) { (response, data, error) in
+            if error != nil {
+                return block(placemark: nil, error: .LocationError(error!))
+            }
+            
+            if data != nil {
+                let jsonResult: NSDictionary = (try! NSJSONSerialization.JSONObjectWithData(data!, options: NSJSONReadingOptions.MutableContainers)) as! NSDictionary
+                let (error,noResults) = self.validateGoogleJSONResponse(jsonResult)
+                if noResults == true || error != nil { // request is ok but not results are returned
+                    block(placemark: nil, error: LocationError(error))
+                } else { // we have some good results to show
+                    let address = LocationParser()
+                    address.parseGoogleLocationData(jsonResult)
+                    let placemark:CLPlacemark = address.getPlacemark()
+                    block(placemark: placemark, error: nil)
+                }
+            }
+        }
+    }
+    
+    private func validateGoogleJSONResponse(jsonResult: NSDictionary!) -> (error: NSError?, noResults: Bool!) {
+        var status = jsonResult.valueForKey("status") as! NSString
+        status = status.lowercaseString
+        if status.isEqualToString("ok") == true { // everything is fine, the sun is shining and we have results!
+            return (nil,false)
+        } else if status.isEqualToString("zero_results") == true { // No results error
+            return (nil,true)
+        } else if status.isEqualToString("over_query_limit") == true { // Quota limit was excedeed
+            let message	= "Query quota limit was exceeded"
+            return (NSError(domain: NSCocoaErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey : message]),false)
+        } else if status.isEqualToString("request_denied") == true { // Request was denied
+            let message	= "Request denied"
+            return (NSError(domain: NSCocoaErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey : message]),false)
+        } else if status.isEqualToString("invalid_request") == true { // Invalid parameters
+            let message	= "Invalid input sent"
+            return (NSError(domain: NSCocoaErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey : message]),false)
+        }
+        return (nil,false) // okay!
+    }
     
     
     /**
