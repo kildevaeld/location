@@ -170,19 +170,6 @@ class LocationParser: NSObject {
 
         let formattedAddressArray = self.formattedAddress.componentsSeparatedByString(", ") as Array
 
-        let kSubAdministrativeArea = "SubAdministrativeArea"
-        let kSubLocality           = "SubLocality"
-        let kState                 = "State"
-        let kStreet                = "Street"
-        let kThoroughfare          = "Thoroughfare"
-        let kFormattedAddressLines = "FormattedAddressLines"
-        let kSubThoroughfare       = "SubThoroughfare"
-        let kPostCodeExtension     = "PostCodeExtension"
-        let kCity                  = "City"
-        let kZIP                   = "ZIP"
-        let kCountry               = "Country"
-        let kCountryCode           = "CountryCode"
-
         addressDict[.SubAdministrativeArea] = self.subAdministrativeArea
         addressDict[.SubLocality] = self.subLocality
         addressDict[.State] = self.administrativeAreaCode

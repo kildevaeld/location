@@ -118,11 +118,20 @@ class AddressCache {
     }
     
     func load () {
-        if !NSFileManager.defaultManager().isReadableFileAtPath(self.storePath) {
+        let fm = NSFileManager.defaultManager()
+        if !fm.isReadableFileAtPath(self.storePath) {
             return
         }
-        
-        let data: AnyObject? = NSKeyedUnarchiver.unarchiveObjectWithFile(self.storePath)
+        let data: AnyObject?
+        do {
+            data = try NSKeyedUnarchiver.location_unarchiveObjectWithFilePath(self.storePath);
+        } catch {
+            data = nil
+            do {
+                try fm.removeItemAtPath(self.storePath)
+            } catch {}
+        }
+        //NSKeyedUnarchiver.unarchiveObjectWithFile(<#T##path: String##String#>)
         
         if let dict = data as? Dictionary<String, Address> {
             

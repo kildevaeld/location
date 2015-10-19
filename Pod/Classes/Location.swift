@@ -30,6 +30,8 @@ public enum LocationError : ErrorType {
     }
 }
 
+public let kLocationDidChangeNotification = "LocationDidChange";
+
 extension LocationError : CustomStringConvertible {
     
     public var description: String {
@@ -253,20 +255,6 @@ public class Location : NSObject, CLLocationManagerDelegate {
             self.shared.reverseGoogleAddress(address, block: block)
         }
         
-        /*let geocoder = CLGeocoder()
-        geocoder.geocodeAddressString(address, inRegion: region) { (placemarks, error) -> Void in
-            if error != nil {
-                block(placemark:nil, error: LocationError.LocationError(error!))
-            } else {
-                if let placemark = placemarks?[0] {
-                    let address = LocationParser()
-                    address.parseAppleLocationData(placemark)
-                    block(placemark: address.getPlacemark(), error:nil)
-                } else {
-                    block(placemark: nil, error: nil)
-                }
-            }
-        }*/
     }
 
     
@@ -564,6 +552,7 @@ public class Location : NSObject, CLLocationManagerDelegate {
     
     private func locationsReceived(locations: [AnyObject]!) {
         if let location = locations.last as? CLLocation {
+            NSNotificationCenter.defaultCenter().postNotificationName(kLocationDidChangeNotification, object: location)
             for request in requests {
                 if request.isAcceptable(location) == true {
                     completeRequest(request, location: location, error: nil)

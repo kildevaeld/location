@@ -90,9 +90,9 @@ public class Address : NSObject, MKAnnotation, NSCoding  {
         let latitude = aDecoder.decodeDoubleForKey(AddressCoding.Latitude)
         let longitude = aDecoder.decodeDoubleForKey(AddressCoding.Longitude)
         let street = aDecoder.decodeObjectForKey(AddressCoding.Street) as? String
-        
+        var valid = true
         if countryName == nil || isoCode == nil || cityName == nil || street == nil {
-            
+            valid = false
         }
         
         let country = Country(name: countryName!,iso: isoCode!)
@@ -105,6 +105,10 @@ public class Address : NSObject, MKAnnotation, NSCoding  {
         self.street = street!
         self.zipCode = zipCode!
         self.location = location
+        
+        /*if valid == false {
+            return nil
+        }*/
         
     }
     
