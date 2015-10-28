@@ -6,4 +6,6 @@ FOUNDATION_EXPORT double LocationVersionNumber;
 //! Project version string for Location.
 FOUNDATION_EXPORT const unsigned char LocationVersionString[];
 
-#import <Location/NSKeyedUnarchiver+Location.h>
+//#import <Location/NSKeyedUnarchiver+Location.h>
+
+//#import <NSKeyedUnarchiver+Location.h>

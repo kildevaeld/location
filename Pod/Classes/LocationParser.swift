@@ -187,8 +187,6 @@ class LocationParser: NSObject {
         let lng = self.longitude
         let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lng)
 
-        /*let placemark = MKPlacemark(coordinate: coordinate, addressDictionary: addressDict)
-        return (placemark as CLPlacemark)*/
         return addressDict.placemark(coordinate)
     }
 
